@@ -22,9 +22,11 @@ body {
     width: 100%;
     border: solid black 1px;
     display: flex;
-    justify-content: end;
-    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    align-items: end;
 }
+
 .buttons {
     flex: 5;
     display: grid;
@@ -35,7 +37,10 @@ body {
 .result {   
     font-size: 30px;
 }
-.operate {
+.history {
+    font-size: 15px;
+}
+[id='='] {
     grid-row-start: 4;
     grid-row-end: 6;
     grid-column-start: 4;

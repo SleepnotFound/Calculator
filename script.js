@@ -5,74 +5,73 @@ buttons.forEach(button => {
     button.addEventListener('click', function(event) {
         //console.log(event.target.className)
         inputing(event);
-        results.textContent = `${num1.join('')}`;
+        results.textContent = `${total.join('')}`;
     })
 })
 
-let num1 = [];
-let num2 = [];
 let op = null;
+let total = []
 
 //takes in 2 values and operator.returns 1 value
-function operate(first,second,opr) {
-    console.log('operate executed: ' + `${num1} ` + `${op} ` + `${num2} ` )
+function operate(totalArray,opr) {
+    let first = totalArray.slice(0, totalArray.indexOf(opr));
+    let second = totalArray.slice(totalArray.indexOf(opr)+1, totalArray.length);
+    
     first = parseFloat(first.join(''));
     second = parseFloat(second.join(''));
+    console.log('after parsing: ' + `${first} ` + `${opr} ` + `${second} ` )
     switch (opr) {
         case '+': first += second;
-            num1 = (''+first).split('');
         break;
         case '-': first -= second;
-            num1 = (''+first).split('');
         break;
         case '*': first *= second;
-            num1 = (''+first).split('');
         break;
         case '/': first /= second;
-            num1 = (''+first).split('');
         break;
     }
     op = null;
-    num2 = [];
-    console.log(`${num1} ` + `${op} ` + `${num2} ` + `= ${num1}`)
+    total = (''+first).split('');
+    console.log(`new total = ${total}`)
 }
 
 function inputing(event) {
-    //console.log(button);
     let button = event.target.className;
     let value = event.target.id;
     switch (button) {
         case 'number': 
-            if (num2.length == 0 && op == null){
-            
-            num1.push(value);
-            console.log('num1: ' + num1)
-            }
-            else if (num1 && op) {
-                num2.push(value);
-                console.log('num2:' + num2);
-            }
+            total.push(value);
             break;
         case 'operator': 
-            if (num1.length && num2.length && op) {
-                operate(num1,num2,op);
+            if (!total.length) {
+                console.log('insert a number first')
             }
-            if (num1.length != 0 && op == null) {
+            else if (total.length && !containsOp(total)) {
                 op = value;
-                console.log('op: ' + op);
+                total.push(value);
+            }
+            else if (containsOp(total) && total[total.length-1] != op) {
+                operate(total,op);
+                op = value;
+                total.push(value);
             }
             break;
         case 'operate' :
-            if (num1 && num2 && op) {
-                operate(num1,num2,op);
+            if (containsOp(total) && total[total.length-1] != op) {
+                operate(total,op)
             }
             break;
         case 'delete' : //backspace 
+            total.pop();
             break;
         case 'clear':
-            num1 = [];
-            num2 = [];
             op = null;
+            total = [];
             break;
     }
+}
+
+function containsOp (total) {
+    const op = ['+','-','*','/']
+    return total.some(value => (op.includes(value)));
 }
