@@ -5,18 +5,23 @@ const previous = document.querySelector('.history');
 buttons.forEach(button => {
     button.addEventListener('click', function(event) {
         inputing(event);
-        previous.textContent = `${last.join('')}`;
-        results.textContent = `${total.join('')}`;
+        previous.textContent = `${lastKey}`;
+        results.textContent = `${total.num1.join('')}` + total.op + `${total.num2.join('')}`;
     })
 })
 
-let op = null;
-let total = []
-let last = [];
+let total = {
+    num1: [],
+    num2: [],
+    op: ''
+}
+let lastKey = 'num1';
 
 //takes in 2 values and operator.returns 1 value
-function operate(totalArray,opr) {
-    last = totalArray;
+function operate(totalObject) {
+    console.log(totalObject)
+
+    /* last = totalArray;
     let first = totalArray.slice(0, totalArray.indexOf(opr));
     let second = totalArray.slice(totalArray.indexOf(opr)+1, totalArray.length);
     
@@ -40,7 +45,7 @@ function operate(totalArray,opr) {
     }
     first = Math.round(first * 100) / 100;
     total = (''+first).split('');
-    console.log(`new total = ${total}`)
+    console.log(`new total = ${total}`) */
 }
 
 function inputing(event) {
@@ -48,50 +53,61 @@ function inputing(event) {
     let value = event.target.id;
     switch (button) {
         case 'decimal':
-            if (!total.length || total[total.length - 1] == op) {
-                total.push('0', value)
+            if (!total.op) {
+                console.log('working on num1')
+                if (!total.num1.length) total.num1.push('0', value);
+                else if (!total.num1.includes(value)) total.num1.push(value);
             }
-            else if (!containsOp(total) && !total.includes('.')) {
-                total.push(value)
-            }
-            else if (containsOp(total) && !total.includes('.',total.indexOf(op))) {
-                total.push(value);
+            if (total.op) {
+                console.log('working on num2')
+                if (!total.num2.length) total.num2.push('0', value);
+                else if (!total.num2.includes(value)) total.num2.push(value);
             }
             break;
         case 'number': 
-            total.push(value);
+            if (!total.op) {
+                total.num1.push(value)
+                lastKey = 'num1';
+                console.log(total.num1)
+            }
+            else if (total.op) {
+                total.num2.push(value)
+                lastKey = 'num2';
+                console.log(total.num2)
+            }
             break;
         case 'operator': 
-            if (!total.length) {
-                console.log('insert a number first')
+            if (!total.num1.length) {
+                //negative allowed once otherwise do nothing
+                console.log('push number first')
             }
-            else if (total.length && !containsOp(total)) {
-                op = value;
-                total.push(value);
+            else if (total.num1.length && !total.op) {
+                total.op = value;
+                lastKey = 'op';
+                console.log('lastKey: ' + lastKey)
             }
-            else if (containsOp(total) && total[total.length-1] != op) {
-                operate(total,op);
-                op = value;
-                total.push(value);
-            }
-            break;
-        case 'operate' :
-            if (containsOp(total) && total[total.length-1] != op) {
-                operate(total,op)
+            else if (total.num1.length && total.op && total.num2.length) {
+                operate(total);
+                total.op = value;
+                lastKey = 'op';
             }
             break;
-        case 'delete' : //backspace 
-            total.pop();
+        case 'operate':
+            if (total.num1.length && total.op && total.num2.length) {
+                operate(total);
+            }          
+            break;
+        case 'delete':
+            console.log('lastKey: ' + lastKey)
+            lastKey == 'op'? total.op = '': total[lastKey].pop();
+            if (!total.num2.length) lastKey = 'op'
+            if (!total.op) lastKey = 'num1';
             break;
         case 'clear':
-            op = null;
-            total = [];
-            last = []
+            total.num1 = []
+            total.num2 = []
+            total.op = '';
+            lastKey = 'num1'
             break;
     }
-}
-
-function containsOp (total) {
-    const op = ['+','-','*','/']
-    return total.some(value => (op.includes(value)));
 }
