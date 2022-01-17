@@ -5,7 +5,7 @@ const previous = document.querySelector('.history');
 buttons.forEach(button => {
     button.addEventListener('click', function(event) {
         inputing(event);
-        previous.textContent = `${lastKey}`;
+        previous.textContent = `${currentKey}`;
         results.textContent = `${total.num1.join('')}` + total.op + `${total.num2.join('')}`;
     })
 })
@@ -15,7 +15,7 @@ let total = {
     num2: [],
     op: ''
 }
-let lastKey = 'num1';
+let currentKey = 'num1';
 
 //takes in 2 values and operator.returns 1 value
 function operate(totalObject) {
@@ -53,43 +53,31 @@ function inputing(event) {
     let value = event.target.id;
     switch (button) {
         case 'decimal':
-            if (!total.op) {
-                console.log('working on num1')
-                if (!total.num1.length) total.num1.push('0', value);
-                else if (!total.num1.includes(value)) total.num1.push(value);
-            }
-            if (total.op) {
-                console.log('working on num2')
-                if (!total.num2.length) total.num2.push('0', value);
-                else if (!total.num2.includes(value)) total.num2.push(value);
-            }
+            let key = total[currentKey];
+            if (!key.length || key[(key.length-1)] == '-') key.push('0', value);
+            else if (!key.includes(value)) key.push(value);
             break;
         case 'number': 
-            if (!total.op) {
-                total.num1.push(value)
-                lastKey = 'num1';
-                console.log(total.num1)
-            }
-            else if (total.op) {
-                total.num2.push(value)
-                lastKey = 'num2';
-                console.log(total.num2)
-            }
+            total[currentKey].push(value);
             break;
         case 'operator': 
-            if (!total.num1.length) {
-                //negative allowed once otherwise do nothing
-                console.log('push number first')
-            }
-            else if (total.num1.length && !total.op) {
+            if (total.num1.length && !total.op) {
                 total.op = value;
-                lastKey = 'op';
-                console.log('lastKey: ' + lastKey)
+                currentKey = 'num2';
             }
             else if (total.num1.length && total.op && total.num2.length) {
                 operate(total);
                 total.op = value;
-                lastKey = 'op';
+                currentKey = 'num2';
+            }
+            break;
+        case 'negative':
+            if (!total[currentKey].length) {
+                total[currentKey].push(value);
+            }
+            else if(total.num1.length && !total.op) {
+                total.op = value;
+                currentKey = 'num2';
             }
             break;
         case 'operate':
@@ -98,16 +86,14 @@ function inputing(event) {
             }          
             break;
         case 'delete':
-            console.log('lastKey: ' + lastKey)
-            lastKey == 'op'? total.op = '': total[lastKey].pop();
-            if (!total.num2.length) lastKey = 'op'
-            if (!total.op) lastKey = 'num1';
+            (!total.num2.length && total.op)? total.op = '': total[currentKey].pop();
+            if (!total.op) currentKey = 'num1'
             break;
         case 'clear':
             total.num1 = []
             total.num2 = []
             total.op = '';
-            lastKey = 'num1'
+            currentKey = 'num1'
             break;
     }
 }
