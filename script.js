@@ -4,120 +4,90 @@ const previous = document.querySelector('.history');
 
 buttons.forEach(button => {
     button.addEventListener('click', function(event) {
-        inputing(event);
-        previous.textContent = `${last.join('')}`;
-        results.textContent = `${total.join('')}`;
+        inputing(event.target.className, event.target.id);
+        previous.textContent = `${prevResult}`;
+        results.textContent = `${total.num1.join('')}` + total.op + `${total.num2.join('')}`;
     })
 })
+let total = {
+    num1: [],
+    num2: [],
+    op: ''
+}
+let currentKey = 'num1';
+let prevResult = '';
 
-let op = null;
-let total = []
-let last = [];
+//takes in all object values. returns new num1 value
+function operate(totalObject) {
+    let n1 = parseFloat(totalObject.num1.join(''));
+    let n2 = parseFloat(totalObject.num2.join(''))
+    prevResult = `${n1} ` + `${totalObject.op} ` + `${n2} `;
 
-//takes in 2 values and operator.returns 1 value
-function operate(totalArray,opr) {
-    last = totalArray;
-    totalArray[0]==op? negativeParse(totalArray): null//positiveParse
-    let first = totalArray.slice(0, totalArray.indexOf(opr));
-    let second = totalArray.slice(totalArray.indexOf(opr)+1, totalArray.length);
-
-    first = parseFloat(first.join(''));
-    second = parseFloat(second.join(''));
-    console.log('after parsing: ' + `_${first}_ ` + `_${opr}_ ` + `_${second}_ ` )
-    switch (opr) {
-        case '+': first += second;
+    switch (totalObject.op) {
+        case '+': n1 += n2;
         break;
-        case '-': first -= second;
+        case '-': n1 -= n2;
         break;
-        case '*': first *= second;
+        case '*': n1 *= n2;
         break;
-        case '/': first /= second;
+        case '/': n1 /= n2;
         break;
     }
-    op = null;
-    if (first == Infinity) {
-        last.push('= Division by zero...')
-        first = '0';
+    if (n1 == Infinity || n1 == -Infinity) {
+        prevResult = 'Division by 0'
+        n1 = 0;
     }
-    first = Math.round(first * 100) / 100;
-    total = (''+first).split('');
-    console.log(`new total = ${total}`)
+    n1 = Math.round(n1 * 100) / 100;
+    total.num1 = (''+n1).split('');
+    total.num2 = [];
+    currentKey = 'num1';
+    total.op = '';
 }
 
-function inputing(event) {
-    let button = event.target.className;
-    let value = event.target.id;
+//controls what is stored in object when button is pressed.
+function inputing(eventClass, eventId) {
+    let button = eventClass;
+    let value = eventId;
     switch (button) {
         case 'decimal':
-            if (!total.length || total[total.length - 1] == op) {                       //at start or after an op
-                total.push('0', value)
-            }
-            else if (!op && !total.includes('.')) {                      //no op, no decimal. first 'number'
-                total.push(value)
-            }
-            else if (op && !total.includes('.',total.indexOf(op))) {     //has op,no decimal after op. second 'number'
-                total.push(value);
-            }
+            let key = total[currentKey];
+            if (!key.length || key[(key.length-1)] == '-') key.push('0', value);
+            else if (!key.includes(value)) key.push(value);
             break;
         case 'number': 
-            total.push(value);
+            total[currentKey].push(value);
             break;
         case 'operator': 
-            if (value == '-') {
-                containsNegative(value);
+            if (!total[currentKey].length && value == '-') {
+                total[currentKey].push(value);
             }
-            else if (!total.length) {                                       //lenght is 0
-                console.log('insert a number first')
+            else if (total.num1.length && !total.op) {
+                if (total.num1[total.num1.length-1] == '-') total.num1.push('0');
+                total.op = value;
+                currentKey = 'num2';
             }
-            else if (total.length && !op) {                                 //lenght>0 and no op
-                op = value;
-                console.log(op)
-                total.push(value);
-            }
-            else if (op && total[total.length-1] != op) {                   //has op and isnt last char
-                operate(total,op);
-                op = value;
-                total.push(value);
+            else if (total.num1.length && total.op && total.num2.length){
+                inputing('operate', value)
+                total.op = value;
+                currentKey = 'num2';
             }
             break;
-        case 'operate' :
-            if (op && total[total.length-1] != op) {                       //has op and isnt last char
-                operate(total,op)
-            }
+        case 'operate':
+            if (total.num1.length && total.op && total.num2.length) {
+                if (total.num2[total.num2.length-1] == '-') total.num2.push('0');
+                operate(total);
+            }          
             break;
-        case 'delete' :
-            let pop = total.pop();
-            pop;
-            if (pop == op) op = null;
+        case 'delete':
+            (!total.num2.length && total.op)? total.op = '': total[currentKey].pop();
+            if (!total.op) currentKey = 'num1'
             break;
         case 'clear':
-            op = null;
-            total = [];
-            last = []
+            total.num1 = []
+            total.num2 = []
+            total.op = '';
+            currentKey = 'num1'
+            prevResult = '';
             break;
     }
-}
-
-function containsNegative (v) {
-    if (!total.length) {                                                //push only at begining
-        total.push(v)
-        console.log(`pushed negative at beginning`)
-    }
-    else if (op && total[total.length-1]==op) {                         //push only after op
-        total.push(v);
-        console.log('pushed negative after op')     //bug continues inserting '-'
-    }
-    else if (!op && total[total.length-1] !='-') {                      //push actual operator 
-        op = v;
-        console.log('pushed operator' + v)
-        total.push(v)
-    }
-}
-function negativeParse (array) {
-    let first = array.slice(0, array.indexOf('-',1));
-    let second = array.slice(array.indexOf('-',1)+1, array.length);
-    console.log('ng: ' + first + '_' + second)
-}
-function positiveParse (array) {
-    //last left off
 }
