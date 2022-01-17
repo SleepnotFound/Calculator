@@ -4,53 +4,50 @@ const previous = document.querySelector('.history');
 
 buttons.forEach(button => {
     button.addEventListener('click', function(event) {
-        inputing(event);
-        previous.textContent = `${currentKey}`;
+        inputing(event.target.className, event.target.id);
+        previous.textContent = `${prevResult}`;
         results.textContent = `${total.num1.join('')}` + total.op + `${total.num2.join('')}`;
     })
 })
-
 let total = {
     num1: [],
     num2: [],
     op: ''
 }
 let currentKey = 'num1';
+let prevResult = '';
 
-//takes in 2 values and operator.returns 1 value
+//takes in all object values. returns new num1 value
 function operate(totalObject) {
-    console.log(totalObject)
+    let n1 = parseFloat(totalObject.num1.join(''));
+    let n2 = parseFloat(totalObject.num2.join(''))
+    prevResult = `${n1} ` + `${totalObject.op} ` + `${n2} `;
 
-    /* last = totalArray;
-    let first = totalArray.slice(0, totalArray.indexOf(opr));
-    let second = totalArray.slice(totalArray.indexOf(opr)+1, totalArray.length);
-    
-    first = parseFloat(first.join(''));
-    second = parseFloat(second.join(''));
-    console.log('after parsing: ' + `${first} ` + `${opr} ` + `${second} ` )
-    switch (opr) {
-        case '+': first += second;
+    switch (totalObject.op) {
+        case '+': n1 += n2;
         break;
-        case '-': first -= second;
+        case '-': n1 -= n2;
         break;
-        case '*': first *= second;
+        case '*': n1 *= n2;
         break;
-        case '/': first /= second;
+        case '/': n1 /= n2;
         break;
     }
-    op = null;
-    if (first == Infinity) {
-        last.push('= Division by zero...')
-        first = '0';
+    if (n1 == Infinity || n1 == -Infinity) {
+        prevResult = 'Division by 0'
+        n1 = 0;
     }
-    first = Math.round(first * 100) / 100;
-    total = (''+first).split('');
-    console.log(`new total = ${total}`) */
+    n1 = Math.round(n1 * 100) / 100;
+    total.num1 = (''+n1).split('');
+    total.num2 = [];
+    currentKey = 'num1';
+    total.op = '';
 }
 
-function inputing(event) {
-    let button = event.target.className;
-    let value = event.target.id;
+//controls what is stored in object when button is pressed.
+function inputing(eventClass, eventId) {
+    let button = eventClass;
+    let value = eventId;
     switch (button) {
         case 'decimal':
             let key = total[currentKey];
@@ -61,27 +58,23 @@ function inputing(event) {
             total[currentKey].push(value);
             break;
         case 'operator': 
-            if (total.num1.length && !total.op) {
-                total.op = value;
-                currentKey = 'num2';
-            }
-            else if (total.num1.length && total.op && total.num2.length) {
-                operate(total);
-                total.op = value;
-                currentKey = 'num2';
-            }
-            break;
-        case 'negative':
-            if (!total[currentKey].length) {
+            if (!total[currentKey].length && value == '-') {
                 total[currentKey].push(value);
             }
-            else if(total.num1.length && !total.op) {
+            else if (total.num1.length && !total.op) {
+                if (total.num1[total.num1.length-1] == '-') total.num1.push('0');
+                total.op = value;
+                currentKey = 'num2';
+            }
+            else if (total.num1.length && total.op && total.num2.length){
+                inputing('operate', value)
                 total.op = value;
                 currentKey = 'num2';
             }
             break;
         case 'operate':
             if (total.num1.length && total.op && total.num2.length) {
+                if (total.num2[total.num2.length-1] == '-') total.num2.push('0');
                 operate(total);
             }          
             break;
@@ -94,6 +87,7 @@ function inputing(event) {
             total.num2 = []
             total.op = '';
             currentKey = 'num1'
+            prevResult = '';
             break;
     }
 }
