@@ -22,7 +22,7 @@ function operate(totalObject) {
     let n1 = parseFloat(totalObject.num1.join(''));
     let n2 = parseFloat(totalObject.num2.join(''))
     prevResult = `${n1} ` + `${totalObject.op} ` + `${n2} `;
-
+    
     switch (totalObject.op) {
         case '+': n1 += n2;
         break;
@@ -30,7 +30,7 @@ function operate(totalObject) {
         break;
         case '*': n1 *= n2;
         break;
-        case '/': n1 /= n2;
+        case '\u00F7': n1 /= n2;
         break;
     }
     if (n1 == Infinity || n1 == -Infinity) {
