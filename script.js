@@ -5,9 +5,10 @@ const previous = document.querySelector('.history');
 buttons.forEach(button => {
     button.addEventListener('click', function(event) {
         inputing(event.target.className, event.target.id);
-        previous.textContent = `${prevResult}`;
-        results.textContent = `${total.num1.join('')}` + total.op + `${total.num2.join('')}`;
     })
+})
+document.addEventListener('keydown',function(event) {
+    keyToInput(event.key);
 })
 let total = {
     num1: [],
@@ -88,6 +89,36 @@ function inputing(eventClass, eventId) {
             total.op = '';
             currentKey = 'num1'
             prevResult = '';
+            break;
+    }
+    previous.textContent = `${prevResult}`;
+    results.textContent = `${total.num1.join('')}` + total.op + `${total.num2.join('')}`;
+}
+
+//Key inputs converted to fit into function inputing
+function keyToInput(code) {
+    switch (isNaN(code)) {
+        case true:
+            let codeClass;
+            const ops = ['*','-','+','/'];
+            switch (code) {
+                case '.':
+                    codeClass = 'decimal'; break;
+                case 'Enter':
+                    codeClass = 'operate'; break;
+                case 'Backspace':
+                    codeClass = 'delete'; break;
+                case 'Delete':
+                    codeClass = 'clear'; break;
+                case ops.find(element => element == code): 
+                    codeClass = 'operator';
+                    if (code == '/') code = '\u00F7';
+                break;
+            }
+            inputing(codeClass, code)
+            break;
+        case false:
+            inputing('number', code)
             break;
     }
 }
